@@ -1,0 +1,39 @@
+
+Steps to run the application on different operating systems.
+
+
+Windows:
+
+- Double-click the launch-windows.bat : It will open the application in your default browser.
+
+
+Mac OS X:
+  
+- Execute the launch-macosx.command script after setting executable permissions.
+
+1. Check whether the files in the directory have executable permisions or not.If not, please give the executable permissions to the all the files inside the directory. 
+
+2. From terminal navigate into the directory of the launch-macosx.command
+
+3. command to execute the file is  "./launch-macosx.command" (content in the quotes should be copied)
+
+
+Linux:
+
+- Execute the launch-linux.sh script after setting executable permissions.
+
+1. Check whether the files in the directory have executable permisions or not.If not, please give the executable permissions to the all the files inside the directory. 
+
+2. From terminal navigate into the directory of the launch-linux.sh
+
+3. command to execute the file is  "./launch-linux.sh" (content in the quotes should be copied)
+
+
+Closing the application:
+
+In order to close the application process on terminal for both Linux and Mac OS X , just hit ctrl+c from keyboard
+
+
+
+
+

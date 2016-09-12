@@ -1,0 +1,1 @@
+#!/bin/sh#PROCESS=5000number=$(ps aux | grep $PROCESS | wc -l)if [ $number -gt 0]   then	kill -9 $(lsof -i:5000)ficd $(dirname "$0")cd server#./node-darwin server.js
