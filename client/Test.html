@@ -1,0 +1,431 @@
+
+<script type="text/javascript" src="js/jquery.mobile-1.4.5.min.js"></script>
+
+<script type="text/javascript" src="js/circle-progress.js"></script>
+<script type="text/javascript" src="js/lib.js"></script>
+<script type="text/javascript" src="js/menu.js"></script>
+<script type="text/javascript" src="js/menuBar.js"></script>
+<script type="text/javascript" src="js/translate.js"></script>
+<script type="text/javascript" src="js/flore_full.js"></script>
+
+<script type="text/javascript" src="json/object_asc.js"></script>
+<script type="text/javascript" src="json/caract_full.js"></script>
+<script type="text/javascript" src="json/he.js"></script>
+<script type="text/javascript" src="json/
+archie_full.js"></script>
+<script type="text/javascript" src="json/char_val.js"></script>
+<script type="text/javascript" src="json/perarray.js"></script>
+<script type="text/javascript" src="json/contradiction_full.js"></script>
+<script type="text/javascript" src="json/descendance_full.js"></script>
+<script type="text/javascript" src="json/flore_asc.js"></script>
+<script type="text/javascript" src="js/work.js"></script>
+<script type="text/javascript" src="js/includefile.js"></script>
+
+<script>
+
+var globval = localStorage.getItem('globalVar'); 
+
+var globvalue = JSON.parse(globval);
+
+var state       = globvalue.no_state;
+var constraints	= globvalue.no_constraints
+var robot		= globvalue.no_robot
+var species		= globvalue.no_species
+
+var frmvalues = localStorage.getItem('formvalues'); 
+var fnlvalue = JSON.parse(frmvalues);
+var store = fnlvalue.txtstore;
+var appstr = fnlvalue.txtappstr;
+var ddno = fnlvalue.txtcurquest;
+
+/*
+if( typeof objet_asc == 'undefined'){
+  $.getScript( 'json/objet_asc.js', function( data, textStatus, jqxhr ) {
+     extractFromObjDB();
+  });
+}else{
+     extractFromObjDB();
+}
+
+*/
+
+</script>
+
+
+<script>
+
+function print_array(array)
+{
+	for ( var i = 0; i < array.length; i++ )
+	{
+		console.log(array[i]+" ");
+	}
+	return;
+}
+
+function Select_carac_From_objet(carac, objet)
+{
+	Out = [];
+	for ( var i = 0; i < Object.keys(objet).length; i++ )
+	{
+		Out.push(objet[i][carac]);
+	}
+	return Out;
+}
+
+function Select_all_From_objet_where_X_eqal_Y(objet,X,Y)
+{
+	Objet_fic = [];
+	for ( var i = 0; i < Object.keys(objet).length; i++ )
+	{
+		if ( objet[i][X] == Y ) 
+		{
+			Objet_fic.push(objet[i]);
+		}
+	}
+	return Objet_fic;
+}
+
+
+function zeros( usrstore, Index_car, Nb_car )
+{
+	for ( var i = Index_car; i < Index_car + Nb_car; i++ )
+	{
+		if ( usrstore[i] == 1 )
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+function Ones(Tab)
+{
+	for ( var i = 0; i < Tab.length ; i++ )
+	{
+		if ( Tab[i] != 1 )
+		{
+			return false;
+		}
+	}
+return true;
+}
+
+function addzero(str)
+{
+	if (str.length == "1")
+		return "0" + str;
+	else
+		return str;
+}
+
+function Entropy(A,Size)
+{
+	S = 0;
+	C = A.length;
+	for ( var i = 0; i < C ; i++ )	
+	{
+		if ( A[i] != 0 )
+		{
+			r = ( A[i] / Size );
+			S = S - ( r * Math.log( r ) ) ; // log(2)
+		}
+	}
+	S = S / Math.log( C );
+	return S;		
+}	
+
+function Dinstinct_Tab_flore(Union)
+{
+	New = [];
+	for ( var i = 0; i < Union.length ; i++ )	
+		{
+			if ( New.indexOf(Union[i]) == -1 )
+			{
+				New.push(Union[i]);
+			}
+		}
+	return New;
+}
+
+
+function Select_species_flore(etat)
+{
+	Carac_ID = Select_carac_From_objet("ID_CARAC",caract_full);
+	// print_array(Carac_ID+" ");
+
+	flore = flore_full;
+	L = etat.length;
+
+	// document.write(L+" ");
+
+	
+	for ( var i = 0; i < L ; i++ )	
+	{
+		if ( etat[i] == 1 )
+		{
+			// document.write(" oui ");
+			flore_bis = [];
+			Carac = Carac_ID[i];
+			// document.write(Carac+" ");
+			for ( var j = 0; j < Object.keys(flore).length ; j++ )	
+			{
+				if ( flore[j][Carac] == 1 )
+				{
+					flore_bis.push( flore[j] );
+				}
+			}
+			flore = flore_bis;
+		}
+	}
+		
+	return flore;		
+}	
+
+
+function Nombre_rep_Dyna(obj,etat)		// Calcul des effectifs restants après les différentes réponses possibles de l'utilisateur, Pour UNE question.
+{
+
+	Objet_fic = Select_all_From_objet_where_X_eqal_Y(object_asc,"Objet",obj)
+
+	effect = [];
+	Union = [];
+
+	Nb_Car = Objet_fic[0]["Nb_Car"];				// On établit les différents caractères qui interviennent pour répondre à la question.
+	Index_Car = Objet_fic[0]["Index_Car"];			// Plage des caractère : NUM :  Index_Car  -->   Index_Car + Nb_Car.
+
+	// document.write("Nb_Car = " + Nb_Car + " ");
+	// document.write("Index_Car = " + Index_Car + " ");
+	// document.write("Sum = " + ((Nb_Car*1)+(1*Index_Car)) + " ");
+
+	caracteres = Select_carac_From_objet("ID_CARAC",caract_full);
+
+	etat_bis = etat;
+
+	for ( var i = Index_Car; i < ((Nb_Car*1)+(1*Index_Car)); i++ )		// Pour chaque caractère, effectif restant s'il est sélectionné.
+	{
+		// document.write(i);
+
+		etat_bis[i] = 1;
+
+		flore = Select_species_flore(etat_bis);
+
+		effect.push(Object.keys(flore).length);
+
+
+		for ( var k = 0; k < Object.keys(flore).length; k++ )
+		{
+			// document.write(flore[k]["Code"]);
+			Union.push(flore[k]["Code"]);
+		}
+
+		etat_bis[i] = 0;
+
+	}
+
+	// document.write("size : "+Union.length+" / ");
+	New_Union = Dinstinct_Tab_flore(Union);
+	// document.write("New_size : "+New_Union.length+" / ");
+	Nb = New_Union.length;
+
+	return [effect,Nb];
+
+}
+
+function Create_Quest(etat,appellable)
+{
+	eps = 0;
+	Questions = [];
+	for (var i = 0; i < Object.keys(object_asc).length; i++)
+	{
+		Index_car = object_asc[i]["Index_Car"];
+		Nb_car = object_asc[i]["Nb_car"];
+
+		if ( zeros( etat, Index_car, Nb_car ) && ( appellable[i] == 1 ) )	
+		{
+			Questions[i-eps] = object_asc[i]["Objet"];
+		}
+		else
+		{
+			eps++;
+		}
+	}
+	return Questions;
+}
+
+function Create_Appellable_one()
+{
+	appellable = [];
+	for (var i = 0; i < Object.keys(object_asc).length; i++)
+	{
+		appellable.push(1);
+	}
+	return appellable;
+}
+
+function print_array_console(array)
+{
+  for ( var i = 0; i < array.length; i++ )
+  {
+    console.log(array[i]+" ");
+  }
+  return;
+}
+
+function Best_Question(Quest,etat,Size)
+{
+
+	E_Max = 0;
+	i_Max = 0;
+	// print_r($Quest);
+	for ( var i = 0; i < Quest.length; i++ )
+	{
+		Val = Quest[i];
+		T = Nombre_rep_Dyna(Val,etat);
+		// echo " Tab $Val = ";
+		// print_r($T[0]);
+
+		A = T[0];
+		// print_r($A);
+		Union = T[1]; 
+		E = Entropy(A,Size) * ( Union / Size ) ;	// $E = Entropy($A,$Size) * ( $Union / $Size ) ; // $E = Entropy($A,$Size);
+
+		if ( ( Union == Size ) && Ones(A) )
+		{
+			E = E + 5;
+		}
+
+		document.write( Quest[i] + " Entropy = " + E + " / ");
+
+		if ( E > E_Max )
+		{
+			E_Max = E;
+			i_Max = i;
+		}
+	}
+	document.write(Quest[i_Max]);
+	return /*[$Quest,*/i_Max/*]*/;			
+}
+
+
+
+
+
+</script>
+
+
+
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>JavaScript Hello World</title>
+</head>
+<body>
+
+<h1> JavaScript Functions Test </h1>
+<script>
+
+var str = new String("12");
+var Tab = ["1","1","1","1"];
+var A = [20,45,30];
+var Size = 90;
+
+// document.write(addzero(str));
+// document.write(Ones(Tab));
+// document.write(Entropy(A,Size));
+
+// nombre = Object.keys(flore_full).length;
+// document.write(objet_asc[3]["Nb_Car"]);
+
+// object_asc_row = object_asc[5];
+// Tab = [1,2,3];
+
+// object_asc["Nb_Car"]
+
+
+// document.write( Select_carac_From_objet("Nb_Car",object_asc)[0] )
+
+// print_array( Select_carac_From_objet("Nb_Car",object_asc) );
+
+// document.write( Object.keys(caract_full).length );
+etat = [];
+
+for ( var k = 0; k < Object.keys(caract_full).length; k++ )
+{
+	etat.push(0);
+}
+
+// document.write(etat[38]);
+
+// Tab = [1,2,3];
+
+// print_array(Tab);
+
+
+/*
+etat[18] = 1;
+etat[36] = 1;
+etat[80] = 1;
+etat[107] = 1;
+etat[68] = 1;
+etat[27] = 1;
+etat[145] = 1;
+etat[179] = 1;
+*/
+
+// print_array(etat);
+
+/*
+flore = Select_species_flore(etat);
+document.write( caract_full[80]["ID_CARAC"]+" " );
+document.write( Object.keys(flore).length );
+*/
+
+// Q = Select_all_From_objet_where_X_eqal_Y(object_asc,"Objet","Inflo");
+
+// document.write(Q[0]["Index_Car"]);
+
+// document.write(flore_full[10]["Code"]);
+
+// print_array( Nombre_rep_Dyna("Port",etat) );
+
+/*
+for ( var i = 0; i < 100; i++ )
+{
+	flore = Select_species_flore(etat);
+}
+*/
+
+/*
+Quest = Select_carac_From_objet("Objet",object_asc);
+// print_array(Quest);
+
+flore = Select_species_flore(etat);
+Nb = Object.keys(flore).length;
+
+i = Best_Question(Quest,etat,Nb);
+*/
+
+//document.write("");
+
+app = Create_Appellable_one();
+
+print_array(app);
+
+Quest = Create_Quest(etat,app);
+
+print_array(Quest);
+
+flore = Select_species_flore(etat);
+Nb = Object.keys(flore).length;
+
+i = Best_Question(Quest,etat,Nb);
+
+// print_array(Nombre_rep_Dyna("Achene",etat));
+
+
+
+</script>
+</body>
+</html>
+
